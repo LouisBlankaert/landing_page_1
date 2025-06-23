@@ -1,0 +1,37 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modèle pour stocker les informations de base des leads
+model Lead {
+  id        String   @id @default(cuid())
+  prenom    String
+  nom       String
+  email     String
+  telephone String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relation avec le formulaire détaillé (optionnel)
+  formulaire Formulaire?
+}
+
+// Modèle pour stocker les réponses au formulaire détaillé
+model Formulaire {
+  id        String   @id @default(cuid())
+  leadId    String   @unique
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  
+  // Champs pour les réponses du formulaire
+  reponses  String   // JSON stockant les réponses aux questions
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
