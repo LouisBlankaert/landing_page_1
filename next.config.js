@@ -25,22 +25,15 @@ const nextConfig = {
       },
     ],
   },
-  // Contourner les problèmes de build pour les routes API d'administration
-  // en excluant ces routes du build statique
-  experimental: {
-    // Exclure certaines routes du build statique
-    outputFileTracingExcludes: {
-      '/api/admin/**': ['**/*'],
-    },
-  },
-  // Rediriger les routes API problématiques vers des pages statiques en production
-  async rewrites() {
-    return [
-      {
-        source: '/api/admin/:path*',
-        destination: '/api/admin-mock/:path*',
+  // Augmenter la mémoire disponible pour les routes API
+  serverRuntimeConfig: {
+    // Augmenter les limites pour les routes API
+    api: {
+      bodyParser: {
+        sizeLimit: '1mb',
       },
-    ];
+      responseLimit: '4mb',
+    },
   },
 };
 

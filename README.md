@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Landing Page Immobilière
 
-## Getting Started
+Cette application Next.js est une landing page immobilière avec vidéo verrouillée, formulaire détaillé, et gestion des leads.
 
-First, run the development server:
+## Fonctionnalités
+
+- Page d'accueil avec vidéo verrouillée et formulaire de capture de lead
+- Formulaire détaillé pour collecter des informations supplémentaires
+- Page de confirmation avec vidéo et instructions
+- Interface d'administration pour visualiser les leads et formulaires
+- Base de données PostgreSQL pour le stockage des données
+
+## Prérequis
+
+- Node.js 18+ et npm/pnpm
+- Base de données PostgreSQL
+
+## Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Installer les dépendances
+pnpm install
+
+# Configurer la base de données
+pnpx prisma migrate dev
+
+# Lancer le serveur de développement
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Variables d'environnement
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Créez un fichier `.env` à la racine du projet avec les variables suivantes :
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+DATABASE_URL="postgresql://user:password@localhost:5432/database_name"
+```
 
-## Learn More
+## Déploiement sur Vercel
 
-To learn more about Next.js, take a look at the following resources:
+1. Créez un compte sur [Vercel](https://vercel.com) si ce n'est pas déjà fait
+2. Connectez votre dépôt GitHub à Vercel
+3. Configurez les variables d'environnement suivantes dans les paramètres du projet :
+   - `DATABASE_URL` : URL de connexion à votre base de données PostgreSQL
+4. Déployez votre application
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Configuration PostgreSQL pour Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Pour que l'application fonctionne correctement sur Vercel :
 
-## Deploy on Vercel
+1. Utilisez un service PostgreSQL compatible avec les environnements serverless comme:
+   - [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres)
+   - [Supabase](https://supabase.com)
+   - [Neon](https://neon.tech)
+   - [Railway](https://railway.app)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. Assurez-vous que votre base de données est accessible depuis les fonctions serverless de Vercel
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. Vérifiez que le schéma de base de données est correctement déployé avec:
+   ```bash
+   npx prisma db push
+   ```
+
+## Structure du projet
+
+- `app/` : Pages et routes API de l'application
+- `components/` : Composants React réutilisables
+- `prisma/` : Schéma de base de données et migrations
+- `public/` : Fichiers statiques (vidéos, images)
+
+## Maintenance
+
+Pour mettre à jour le schéma de la base de données :
+
+```bash
+# Après modification du schéma dans prisma/schema.prisma
+pnpx prisma migrate dev --name nom_de_la_migration
+```
