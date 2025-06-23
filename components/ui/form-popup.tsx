@@ -81,8 +81,16 @@ export function FormPopup({ onSubmit, onClose }: FormPopupProps) {
     setIsSubmitting(true);
     
     try {
-      await onSubmit(formData);
-      // Le popup sera fermé par le parent après soumission réussie
+      // Ajout d'un délai pour s'assurer que l'état est correctement mis à jour
+      setTimeout(async () => {
+        try {
+          await onSubmit(formData);
+          // Le popup sera fermé par le parent après soumission réussie
+        } catch (error) {
+          console.error("Erreur lors de la soumission du formulaire:", error);
+          setIsSubmitting(false);
+        }
+      }, 100);
     } catch (error) {
       console.error("Erreur lors de la soumission du formulaire:", error);
       setIsSubmitting(false);
@@ -193,6 +201,11 @@ export function FormPopup({ onSubmit, onClose }: FormPopupProps) {
               type="submit" 
               className="w-full"
               disabled={isSubmitting}
+              onClick={(e) => {
+                if (!isSubmitting) {
+                  handleSubmit(e);
+                }
+              }}
             >
               {isSubmitting ? "Envoi en cours..." : "Soumettre"}
             </Button>

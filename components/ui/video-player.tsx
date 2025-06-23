@@ -36,14 +36,23 @@ export function VideoPlayer({
   };
 
   const handleFormSubmit = async (data: LeadFormData) => {
-    if (onLeadCapture) {
-      await onLeadCapture(data);
+    try {
+      if (onLeadCapture) {
+        await onLeadCapture(data);
+      }
+      // Déverrouiller la vidéo et sauvegarder l'état dans le localStorage
+      setUnlocked(true);
+      localStorage.setItem("videoUnlocked", "true");
+      setShowForm(false);
+      // Ajouter un petit délai avant de lancer la lecture
+      setTimeout(() => {
+        setPlaying(true);
+      }, 300);
+    } catch (error) {
+      console.error("Erreur lors de la capture du lead:", error);
+      // Fermer le formulaire même en cas d'erreur
+      setShowForm(false);
     }
-    // Déverrouiller la vidéo et sauvegarder l'état dans le localStorage
-    setUnlocked(true);
-    localStorage.setItem("videoUnlocked", "true");
-    setShowForm(false);
-    setPlaying(true);
   };
 
   const handleFormClose = () => {
@@ -100,7 +109,9 @@ export function VideoPlayer({
       </div>
       
       {showForm && (
-        <FormPopup onSubmit={handleFormSubmit} onClose={handleFormClose} />
+        <div className="z-50">
+          <FormPopup onSubmit={handleFormSubmit} onClose={handleFormClose} />
+        </div>
       )}
     </div>
   );
