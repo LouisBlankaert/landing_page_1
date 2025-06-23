@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 interface FormQuestion {
@@ -12,11 +12,22 @@ interface FormQuestion {
   required?: boolean;
 }
 
+// Composant principal qui utilise Suspense pour envelopper le contenu utilisant useSearchParams
 export default function FormulairePage() {
-  const router = useRouter();
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Chargement du formulaire...</div>}>
+      <FormulaireContent />
+    </Suspense>
+  );
+}
+
+// Composant client qui utilise useSearchParams
+function FormulaireContent() {
+  const { useSearchParams } = require("next/navigation");
   const searchParams = useSearchParams();
-  const leadId = searchParams.get("leadId");
+  const leadId = searchParams?.get("leadId") || null;
   
+  const router = useRouter();
   const [reponses, setReponses] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
