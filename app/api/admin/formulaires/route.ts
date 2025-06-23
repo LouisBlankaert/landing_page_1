@@ -1,19 +1,31 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/utils/prisma";
+import { supabase, snakeToCamel } from "@/lib/utils/supabase";
 import { apiConfig } from "../../config";
 
 export async function GET() {
   try {
-    // En production sur Vercel, nous pourrions avoir besoin d'une approche différente
-    // pour la base de données, mais pour l'instant nous essayons avec Prisma
+    // Utiliser Supabase pour récupérer les formulaires
     let formulaires = [];
     
     try {
-      formulaires = await prisma.formulaire.findMany({
-        orderBy: {
-          createdAt: 'desc'
-        }
-      });
+      const { data, error } = await supabase
+        .from('formulaires')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Convertir les noms de colonnes de snake_case (Supabase) vers camelCase (application)
+      formulaires = data.map(form => ({
+        id: form.id,
+        leadId: form.lead_id,
+        reponses: form.reponses,
+        createdAt: form.created_at,
+        updatedAt: form.updated_at
+      }));
+      
     } catch (dbError) {
       console.warn("Erreur de base de données, utilisation de données fictives:", dbError);
       // En cas d'erreur avec la base de données en production, retourner des données fictives

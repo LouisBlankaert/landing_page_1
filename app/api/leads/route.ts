@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/utils/prisma";
+import { supabase, camelToSnake, snakeToCamel } from "@/lib/utils/supabase";
 
 export async function POST(request: Request) {
   try {
@@ -18,14 +18,21 @@ export async function POST(request: Request) {
     
     // Vérifier si le lead existe déjà avec cet email OU ce numéro de téléphone
     console.log("Recherche d'un lead existant avec l'email ou le téléphone:", email, telephone);
-    const existingLead = await prisma.lead.findFirst({
-      where: {
-        OR: [
-          { email },
-          { telephone }
-        ]
-      },
-    });
+    
+    const { data: existingLeads, error: searchError } = await supabase
+      .from('leads')
+      .select('*')
+      .or(`email.eq.${email},telephone.eq.${telephone}`);
+    
+    if (searchError) {
+      console.error("Erreur lors de la recherche de leads existants:", searchError);
+      return NextResponse.json(
+        { error: "Erreur lors de la recherche de leads existants" },
+        { status: 500 }
+      );
+    }
+    
+    const existingLead = existingLeads && existingLeads.length > 0 ? snakeToCamel(existingLeads[0]) : null;
     console.log("Lead existant:", existingLead);
     
     if (existingLead) {
@@ -39,17 +46,33 @@ export async function POST(request: Request) {
     
     // Créer un nouveau lead
     console.log("Création d'un nouveau lead");
-    const lead = await prisma.lead.create({
-      data: {
-        prenom,
-        nom,
-        email,
-        telephone,
-      },
-    });
-    console.log("Nouveau lead créé:", lead);
     
-    return NextResponse.json({ id: lead.id }, { status: 201 });
+    const { data: newLead, error: insertError } = await supabase
+      .from('leads')
+      .insert([
+        { 
+          prenom, 
+          nom, 
+          email, 
+          telephone,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ])
+      .select();
+    
+    if (insertError) {
+      console.error("Erreur lors de la création du lead:", insertError);
+      return NextResponse.json(
+        { error: "Erreur lors de la création du lead" },
+        { status: 500 }
+      );
+    }
+    
+    const formattedLead = snakeToCamel(newLead[0]);
+    console.log("Nouveau lead créé:", formattedLead);
+    
+    return NextResponse.json({ id: formattedLead.id }, { status: 201 });
   } catch (error) {
     console.error("Erreur lors de la création du lead:", error);
     console.error("Stack trace:", (error as Error).stack);
