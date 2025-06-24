@@ -4,6 +4,9 @@ import { supabase, camelToSnake, snakeToCamel } from "@/lib/utils/supabase";
 export async function POST(request: Request) {
   try {
     console.log("API route /api/leads appelée");
+    console.log("URL Supabase:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+    console.log("Clé Supabase disponible:", !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+    
     const body = await request.json();
     console.log("Données reçues:", body);
     const { prenom, nom, email, telephone } = body;
@@ -19,10 +22,20 @@ export async function POST(request: Request) {
     // Vérifier si le lead existe déjà avec cet email OU ce numéro de téléphone
     console.log("Recherche d'un lead existant avec l'email ou le téléphone:", email, telephone);
     
-    const { data: existingLeads, error: searchError } = await supabase
+    // Rechercher les leads existants avec l'email ou le téléphone fournis
+    const { data: existingLeadsEmail, error: searchErrorEmail } = await supabase
       .from('leads')
       .select('*')
-      .or(`email.eq.${email},telephone.eq.${telephone}`);
+      .eq('email', email);
+      
+    const { data: existingLeadsPhone, error: searchErrorPhone } = await supabase
+      .from('leads')
+      .select('*')
+      .eq('telephone', telephone);
+      
+    // Combiner les résultats
+    const existingLeads = [...(existingLeadsEmail || []), ...(existingLeadsPhone || [])];
+    const searchError = searchErrorEmail || searchErrorPhone;
     
     if (searchError) {
       console.error("Erreur lors de la recherche de leads existants:", searchError);
